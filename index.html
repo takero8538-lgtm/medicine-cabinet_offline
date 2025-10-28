@@ -42,6 +42,8 @@
       background-color: #eee;
     }
   </style>
+  <link rel="manifest" href="manifest.json">
+
 </head>
 <body>
   <h2>薬品棚検索</h2>
@@ -788,6 +790,10 @@
 
 
   <script>
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("service-worker.js");
+}
+
     let medicineData = [];
     let shelfMap = {};
 
@@ -864,6 +870,4 @@
     });
   </script>
 </body>
-
 </html>
-
