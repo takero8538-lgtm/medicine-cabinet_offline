@@ -5,14 +5,9 @@ self.addEventListener("install", event => {
         "./",
         "./index.html",
         "./manifest.json",
-        "./icon.png"
+        "./icon.png",
+        "./xlsx.min.js" // 👈 新しいファイル名に修正
       ]);
     })
-  );
-});
-
-self.addEventListener("fetch", event => {
-  event.respondWith(
-    caches.match(event.request).then(response => response || fetch(event.request))
   );
 });
