@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>薬品棚検索</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    #map td {
+      width: 60px; height: 40px;
+      text-align: center;
+      border: 1px solid #ccc;
+    }
+    .highlight {
+      animation: blink 1s infinite;
+    }
+    @keyframes blink {
+      0%   { background-color: yellow; }
+      50%  { background-color: pink; }
+      100% { background-color: yellow; }
+    }
+
+    #medicineInput {
+      width: 500px;
+      font-size: 16px;
+    }
+
+    #suggestList {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      border: 1px solid #ccc;
+      max-height: 150px;
+      overflow-y: auto;
+      width: 500px;
+    }
+    #suggestList li {
+      width: 100%;  
+      padding: 5px;
+      cursor: pointer;
+    }
+    #suggestList li:hover {
+      background-color: #eee;
+    }
+  </style>
+</head>
+<body>
+  <h2>薬品棚検索</h2>
+
+  <input type="file" id="excelFile" accept=".xlsx"><br><br>
+
+  <label for="medicineInput">薬品名：</label><br>
+  <input type="text" id="medicineInput" placeholder="薬品名を入力"><br>
+  <ul id="suggestList"></ul><br>
+
+  <div id="info">
+    <strong>棚名：</strong><span id="shelfName">-</span><br>
+    <strong>棚内 横：</strong><span id="shelfX">-</span><br>
+    <strong>棚内 縦：</strong><span id="shelfY">-</span>
+  </div>
+
+  <br><h3>棚マップ</h3>
+<table border=0 cellpadding=0 cellspacing=0 width=1080 style='border-collapse:
+ collapse;table-layout:fixed;width:808pt'>
+ <col width=14 span=4 style='mso-width-source:userset;mso-width-alt:435;
+ width:10pt'>
+ <col width=32 span=32 style='width:24pt'>
+ <tr height=25 style='height:18.6pt'>
+  <td height=25 width=14 style='height:18.6pt;width:10pt'></td>
+  <td width=14 style='width:10pt'></td>
+  <td width=14 style='width:10pt'></td>
+  <td width=14 style='width:10pt'></td>
+  <td width=32 style='width:24pt'></td>
+  <td width=32 style='width:24pt'></td>
+  <td width=32 style='width:24pt'></td>
+  <td width=32 style='width:24pt'></td>
+  <td width=32 style='width:24pt'></td>
+  <td width=32 style='width:24pt'></td>
+  <td width=32 style='width:24pt'></td>
+  <td width=32 style='width:24pt'></td>
+  <td width=32 style='width:24pt'></td>
+  <td width=32 style='width:24pt'></td>
+  <td width=32 style='width:24pt'></td>
+  <td width=32 style='width:24pt'></td>
+  <td width=32 style='width:24pt'></td>
+  <td width=32 style='width:24pt'></td>
+  <td width=32 style='width:24pt'></td>
+  <td width=32 style='width:24pt'></td>
+  <td width=32 style='width:24pt'></td>
+  <td width=32 style='width:24pt'></td>
+  <td width=32 style='width:24pt'></td>
+  <td width=32 style='width:24pt'></td>
+  <td width=32 style='width:24pt'></td>
+  <td width=32 style='width:24pt'></td>
+  <td width=32 style='width:24pt'></td>
+  <td width=32 style='width:24pt'></td>
+  <td width=32 style='width:24pt'></td>
+  <td width=32 style='width:24pt'></td>
+  <td width=32 style='width:24pt'></td>
+  <td width=32 style='width:24pt'></td>
+  <td width=32 style='width:24pt'></td>
+  <td width=32 style='width:24pt'></td>
+  <td width=32 style='width:24pt'></td>
+  <td width=32 style='width:24pt'></td>
+ </tr>
+ <tr height=24 style='mso-height-source:userset;height:18.0pt'>
+  <td height=24 colspan=3 style='height:18.0pt;mso-ignore:colspan'></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td id="n1" colspan=7 rowspan=2 class=xl78 style='border:2px solid black;text-align:center; vertical-align:middle'>①<ruby>錠剤<span
+  style='display:none'><rt>ジョウザイ</rt></span></ruby>ヒート<ruby>棚<span
+  style='display:none'><rt>タナ</rt></span></ruby></td>
+  <td class=xl67 style='border-top:2px solid black'></td>
+  <td colspan=2 rowspan=2 class=xl98 width=64 style='border:2px solid black;text-align:center; vertical-align:middle'><ruby>錠剤<span style='display:none'><rt>ジョウザイ</rt></span></ruby><br>
+    <ruby>分包機<span style='display:none'><rt>ブンポウキ</rt></span></ruby></td>
+  <td class=xl67 style='border-top:2px solid black'></td>
+  <td colspan=4 rowspan=2 class=xl84 width=128 style='border:2px solid black;text-align:center; vertical-align:middle;'><ruby>散薬<span style='display:
+  none'><rt>サンヤク</rt></span></ruby><br>
+    <ruby>分包機<span style='display:none'><rt>ブンポウキ</rt></span></ruby></td>
+  <td class=xl67 style='border-top:2px solid black'></td>
+  <td id="n2" colspan=5 rowspan=2 class=xl84 width=160 style='border:2px solid black;text-align:center; vertical-align:middle'>②<ruby>散薬<span
+  style='display:none'><rt>サンヤク</rt></span></ruby><ruby>調剤台<span
+  style='display:none'><rt>チョウザイダイ</rt></span></ruby></td>
+  <td class=xl67 style='border-top:2px solid black'></td>
+  <td class=xl67 style='border-top:2px solid black'></td>
+  <td class=xl67 style='border-top:2px solid black'></td>
+  <td id="n3" colspan=2 rowspan=7 class=xl84 width=64 style='border:2px solid black;text-align:center; vertical-align:middle'>③<br>
+    <ruby>臨時<span style='display:none'><rt>リンジ</rt></span></ruby><ruby>薬<span
+  style='display:none'><rt>クスリ</rt></span></ruby><br>
+    ヒート<ruby>棚<span style='display:none'><rt>タナ</rt></span></ruby><br>
+    ③<br>
+    点眼薬</td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+ </tr>
+ <tr height=25 style='height:18.6pt'>
+  <td height=25 colspan=3 style='height:18.6pt;mso-ignore:colspan'></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+ </tr>
+ <tr height=24 style='height:18.0pt'>
+  <td height=24 colspan=3 style='height:18.0pt;mso-ignore:colspan'></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl70 style= 'border-left:2px solid black'></td>
+  <td class=xl67 style='border-top:none'></td>
+  <td class=xl67 style='border-top:none'></td>
+  <td class=xl67 style='border-top:none'></td>
+  <td class=xl67 style='border-top:none'></td>
+  <td class=xl67 style='border-top:none'></td>
+  <td class=xl67 style='border-top:none'></td>
+  <td class=xl66></td>
+  <td class=xl67 style='border-top:none'></td>
+  <td class=xl67 style='border-top:none'></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+ </tr>
+ <tr height=24 style='height:18.0pt'>
+  <td height=24 colspan=3 style='height:18.0pt;mso-ignore:colspan'></td>
+  <td class=xl66></td>
+  <td class=xl95></td>
+  <td class=xl70 style= 'border-left:2px solid black'></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+ </tr>
+ <tr height=24 style='height:18.0pt'>
+  <td height=24 colspan=3 style='height:18.0pt;mso-ignore:colspan'></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl70 style= 'border-left:2px solid black'></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+ </tr>
+ <tr height=25 style='height:18.6pt'>
+  <td height=25 colspan=3 style='height:18.6pt;mso-ignore:colspan'></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl70 style= 'border-left:1px solid black'></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+ </tr>
+ <tr height=25 style='height:18.6pt'>
+  <td height=25 colspan=3 style='height:18.6pt;mso-ignore:colspan'></td>
+  <td class=xl66></td>
+  <td class=xl71 style="border: 1px solid black;text-align:center; vertical-align:middle"><ruby>窓口<span style='display:none'><rt>マドグチ</rt></span></ruby></td>
+  <td class=xl70></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td id="n6" colspan=2 rowspan=2 class=xl84 width=64 style='border:2px solid black;text-align:center; vertical-align:middle'>⑥<br>
+    バラ</td>
+  <td id="n5" colspan=2 rowspan=2 class=xl80 style='border:2px solid black;text-align:center; vertical-align:middle'>⑤</td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+ </tr>
+ <tr height=25 style='height:18.6pt'>
+  <td height=25 colspan=3 style='height:18.6pt;mso-ignore:colspan'></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl70 style= 'border-left:1px solid black'></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+ </tr>
+ <tr height=25 style='height:18.6pt'>
+  <td height=25 colspan=3 style='height:18.6pt;mso-ignore:colspan'></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td colspan=2 rowspan=10 class=xl80 style='border:2px solid black;text-align:center; vertical-align:middle'>PC<ruby>台<span style='display:none'><rt>ダイ</rt></span></ruby></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl76></td>
+  <td class=xl76></td>
+  <td class=xl76></td>
+  <td class=xl76></td>
+  <td class=xl76></td>
+  <td class=xl76></td>
+  <td class=xl76></td>
+  <td class=xl76></td>
+  <td class=xl76></td>
+  <td class=xl76></td>
+  <td class=xl76></td>
+  <td class=xl76></td>
+  <td class=xl66></td>
+  <td colspan=2 rowspan=4 class=xl80 style='border:2px solid black;text-align:center; vertical-align:middle'><ruby>流<span style='display:none'><rt>ナガ</rt></span></ruby>し</td>
+  <td id="n7" colspan=2 rowspan=4 class=xl84 width=64 style='border:2px solid black;text-align:center; vertical-align:middle'>⑦<br>
+    <ruby>軟膏<span style='display:none'><rt>ナンコウ</rt></span></ruby>ラコール</td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td id="n4" colspan=2 rowspan=3 class=xl84 width=64 style='border:2px solid black;text-align:center; vertical-align:middle'>④<br>
+    <ruby>漢方薬<span style='display:none'><rt>カンポウヤク</rt></span></ruby></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+ </tr>
+ <tr height=25 style='height:18.6pt'>
+  <td height=25 colspan=3 style='height:18.6pt;mso-ignore:colspan'></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl95></td>
+ <td colspan=12 rowspan=3 class=xl96 style='border:2px solid black;text-align:center; vertical-align:middle'>調剤台</td>
+
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+ </tr>
+ <tr height=25 style='height:18.6pt'>
+  <td height=25 colspan=3 style='height:18.6pt;mso-ignore:colspan'></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl95></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+ </tr>
+ <tr height=25 style='height:18.6pt'>
+  <td height=25 colspan=3 style='height:18.6pt;mso-ignore:colspan'></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl95></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+ </tr>
+ <tr height=25 style='height:18.6pt'>
+  <td height=25 colspan=3 style='height:18.6pt;mso-ignore:colspan'></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl67 style='border-top:none'></td>
+  <td class=xl67 style='border-top:none'></td>
+  <td class=xl67 style='border-top:none'></td>
+  <td class=xl67 style='border-top:none'></td>
+  <td class=xl67 style='border-top:none'></td>
+  <td class=xl67 style='border-top:none'></td>
+  <td class=xl67 style='border-top:none'></td>
+  <td class=xl67 style='border-top:none'></td>
+  <td class=xl67 style='border-top:none'></td>
+  <td class=xl67 style='border-top:none'></td>
+  <td class=xl67 style='border-top:none'></td>
+  <td class=xl67 style='border-top:none'></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+ </tr>
+ <tr height=25 style='height:18.6pt'>
+  <td height=25 colspan=3 style='height:18.6pt;mso-ignore:colspan'></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+<td id="n8" colspan="2" rowspan="3" class="xl84" width="64" style="border:2px solid black;text-align:center; vertical-align:middle">
+  ⑧<br>
+  抗生剤<br>
+  小輸液
+</td>
+<td class="xl66"></td>
+<td colspan="2" class="xl78" style="border:2px solid black;text-align:center; vertical-align:middle">
+  劇注射
+</td>
+
+  <td class=xl66></td>
+  <td class=xl66></td>
+ </tr>
+ <tr height=24 style='height:18.0pt'>
+  <td height=24 colspan=3 style='height:18.0pt;mso-ignore:colspan'></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td colspan=2 rowspan=2 class=xl80 style='border:2px solid black;text-align:center; vertical-align:middle'><ruby>注射<span style='display:none'><rt>チュウシャ</rt></span></ruby></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+ </tr>
+ <tr height=25 style='height:18.6pt'>
+  <td height=25 colspan=3 style='height:18.6pt;mso-ignore:colspan'></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+ </tr>
+ <tr height=24 style='height:18.0pt'>
+  <td height=24 colspan=3 style='height:18.0pt;mso-ignore:colspan'></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl67 style='border-top:none'></td>
+  <td class=xl73 style='border-top:none'></td>
+  <td class=xl70 style='border-left:1px solid black'></td>
+  <td class=xl66></td>
+ </tr>
+ <tr height=25 style='height:18.6pt'>
+  <td height=25 colspan=3 style='height:18.6pt;mso-ignore:colspan'></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl74></td>
+  <td class=xl70 style="border: 1px solid black;text-align:center; vertical-align:middle"><ruby>扉<span style='display:none'><rt>トビラ</rt></span></ruby></td>
+  <td class=xl66></td>
+ </tr>
+ <tr height=24 style='height:18.0pt'>
+  <td height=24 colspan=3 style='height:18.0pt;mso-ignore:colspan'></td>
+  <td class=xl66></td>
+  <td class=xl95></td>
+  <td class=xl70 style= 'border-left:2px solid black'></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td id="n10" colspan=2 rowspan=2 class=xl84 width=64 style='border:2px solid black;text-align:center; vertical-align:middle'>⑩<br>
+    シップ</td>
+  <td id="n9" colspan=2 rowspan=2 class=xl84 width=64 style='border:2px solid black;text-align:center; vertical-align:middle'>⑨<br>
+    <ruby>冷蔵庫<span style='display:none'><rt>レイゾウコ</rt></span></ruby></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl66></td>
+  <td class=xl74></td>
+  <td class=xl70 style='border-left:1px solid black'></td>
+  <td class=xl66></td>
+ </tr>
+ <tr height=25 style='height:18.6pt'>
+  <td height=25 colspan=3 style='height:18.6pt;mso-ignore:colspan'></td>
+  <td class=xl66></td>
+  <td class=xl95></td>
+  <td class=xl70 style= 'border-left:2px solid black'></td>
+  <td class=xl76></td>
+  <td class=xl76></td>
+  <td class=xl76></td>
+  <td class=xl76></td>
+  <td class=xl76></td>
+  <td class=xl76></td>
+  <td class=xl76></td>
+  <td class=xl76></td>
+  <td class=xl76></td>
+  <td class=xl76></td>
+  <td class=xl76></td>
+  <td class=xl76></td>
+  <td class=xl76></td>
+  <td class=xl76></td>
+  <td class=xl76></td>
+  <td class=xl76></td>
+  <td class=xl76></td>
+  <td class=xl76></td>
+  <td class=xl76></td>
+  <td class=xl76></td>
+  <td class=xl76></td>
+  <td class=xl76></td>
+  <td class=xl76></td>
+  <td class=xl77></td>
+  <td class=xl70 style='border-left:1px solid black'></td>
+  <td class=xl66></td>
+ </tr>
+ <tr height=24 style='height:18.0pt'>
+  <td height=24 colspan=5 style='height:18.0pt;mso-ignore:colspan'></td>
+  <td style='border-top:2px solid black'></td>
+  <td style='border-top:2px solid black'></td>
+  <td style='border-top:2px solid black'></td>
+  <td style='border-top:2px solid black'></td>
+  <td style='border-top:2px solid black'></td>
+  <td style='border-top:2px solid black'></td>
+  <td style='border-top:2px solid black'></td>
+  <td style='border-top:2px solid black'></td>
+  <td style='border-top:2px solid black'></td>
+  <td style='border-top:2px solid black'></td>
+  <td style='border-top:2px solid black'></td>
+  <td style='border-top:2px solid black'></td>
+  <td style='border-top:2px solid black'></td>
+  <td style='border-top:2px solid black'></td>
+  <td style='border-top:2px solid black'></td>
+  <td style='border-top:2px solid black'></td>
+  <td style='border-top:2px solid black'></td>
+  <td style='border-top:2px solid black'></td>
+  <td style='border-top:2px solid black'></td>
+  <td style='border-top:2px solid black'></td>
+  <td style='border-top:2px solid black'></td>
+  <td style='border-top:2px solid black'></td>
+  <td style='border-top:2px solid black'></td>
+  <td style='border-top:2px solid black'></td>
+  <td style='border-top:2px solid black'></td>
+  <td style='border-top:2px solid black'></td>
+  <td style='border-top:2px solid black'></td>
+  <td style='border-top:2px solid black'></td>
+  <td style='border-top:2px solid black'></td>
+ </tr>
+ <![if supportMisalignedColumns]>
+ <tr height=0 style='display:none'>
+  <td width=14 style='width:10pt'></td>
+  <td width=14 style='width:10pt'></td>
+  <td width=14 style='width:10pt'></td>
+  <td width=14 style='width:10pt'></td>
+  <td width=32 style='width:24pt'></td>
+  <td width=32 style='width:24pt'></td>
+  <td width=32 style='width:24pt'></td>
+  <td width=32 style='width:24pt'></td>
+  <td width=32 style='width:24pt'></td>
+  <td width=32 style='width:24pt'></td>
+  <td width=32 style='width:24pt'></td>
+  <td width=32 style='width:24pt'></td>
+  <td width=32 style='width:24pt'></td>
+  <td width=32 style='width:24pt'></td>
+  <td width=32 style='width:24pt'></td>
+  <td width=32 style='width:24pt'></td>
+  <td width=32 style='width:24pt'></td>
+  <td width=32 style='width:24pt'></td>
+  <td width=32 style='width:24pt'></td>
+  <td width=32 style='width:24pt'></td>
+  <td width=32 style='width:24pt'></td>
+  <td width=32 style='width:24pt'></td>
+  <td width=32 style='width:24pt'></td>
+  <td width=32 style='width:24pt'></td>
+  <td width=32 style='width:24pt'></td>
+  <td width=32 style='width:24pt'></td>
+  <td width=32 style='width:24pt'></td>
+  <td width=32 style='width:24pt'></td>
+  <td width=32 style='width:24pt'></td>
+  <td width=32 style='width:24pt'></td>
+  <td width=32 style='width:24pt'></td>
+  <td width=32 style='width:24pt'></td>
+  <td width=32 style='width:24pt'></td>
+  <td width=32 style='width:24pt'></td>
+  <td width=32 style='width:24pt'></td>
+  <td width=32 style='width:24pt'></td>
+ </tr>
+ <![endif]>
+</table>
+
+
+
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+
+  <script>
+    let medicineData = [];
+    let shelfMap = {};
+
+    document.getElementById("excelFile").addEventListener("change", function(e) {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        const data = new Uint8Array(evt.target.result);
+        const workbook = XLSX.read(data, { type: "array" });
+        const sheet = workbook.Sheets["表"];
+        const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+
+        medicineData = [];
+        shelfMap = {};
+
+        rows.forEach((row, i) => {
+          const name = row[0];       // A列：薬品名
+          const shelfNo = row[1];    // B列：棚番号
+          const x = row[3];          // D列：横位置
+          const y = row[5];          // F列：縦位置
+          const shelfNo2 = row[10];  // K列：棚番号（別表）
+          const shelfName = row[11]; // L列：棚名
+          const shelfId = row[12];   // M列：棚ID
+
+          if (shelfNo2 != null && shelfId != null) {
+            shelfMap[String(shelfNo2).trim()] = {
+              name: String(shelfName || "").trim(),
+              id: String(shelfId).trim()
+            };
+          }
+
+          if (name != null && shelfNo != null && x != null && y != null) {
+            medicineData.push({
+              name: String(name).trim(),
+              shelfNo: String(shelfNo).trim(),
+              x: String(x).trim(),
+              y: String(y).trim()
+            });
+          }
+        });
+
+        console.log("読み込んだ薬品名一覧:", medicineData.map(item => item.name));
+      };
+      reader.readAsArrayBuffer(file);
+    });
+
+    document.getElementById("medicineInput").addEventListener("input", function() {
+      const input = this.value.trim();
+      const suggestList = document.getElementById("suggestList");
+      suggestList.innerHTML = "";
+
+      if (input === "") return;
+
+      const matches = medicineData.filter(item => item.name.includes(input));
+      matches.forEach(item => {
+        const li = document.createElement("li");
+        li.textContent = item.name;
+        li.onclick = () => {
+          document.getElementById("medicineInput").value = item.name;
+          suggestList.innerHTML = "";
+
+          const shelfInfo = shelfMap[item.shelfNo] || { name: "-", id: "-" };
+          document.getElementById("shelfName").textContent = shelfInfo.name;
+          document.getElementById("shelfX").textContent = item.x;
+          document.getElementById("shelfY").textContent = item.y;
+
+          // ハイライト処理（棚IDのみ）
+          document.querySelectorAll(".highlight").forEach(el => el.classList.remove("highlight"));
+          const targetCell = document.getElementById(shelfInfo.id);
+          if (targetCell) targetCell.classList.add("highlight");
+        };
+        suggestList.appendChild(li);
+      });
+    });
+  </script>
+</body>
+</html>
